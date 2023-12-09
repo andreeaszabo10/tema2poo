@@ -1,9 +1,7 @@
 package app.user;
 
-import app.audio.Collections.AudioCollection;
-import app.audio.Collections.Playlist;
-import app.audio.Collections.PlaylistOutput;
-import app.audio.Collections.Podcast;
+import app.Artist;
+import app.audio.Collections.*;
 import app.audio.Files.AudioFile;
 import app.audio.Files.Episode;
 import app.audio.Files.Song;
@@ -41,6 +39,8 @@ public class User {
     private boolean lastSearched;
     @Getter
     private boolean online = true;
+    @Getter
+    private String page = "home";
 
     /**
      * Instantiates a new User.
@@ -59,6 +59,10 @@ public class User {
         player = new Player();
         searchBar = new SearchBar(username);
         lastSearched = false;
+    }
+
+    public void setPage(String page) {
+        this.page = page;
     }
 
     /**
@@ -106,6 +110,15 @@ public class User {
      * @return the array list
      */
     public ArrayList<String> search(final Filters filters, final String type) {
+        if (searchBar.getLastSearchType() != null
+                && searchBar.getLastSearchType().equals("album")) {
+            if (searchBar.getLastSelected() != null){
+                Album album = Artist.getAlbumDetails(searchBar.getLastSelected().getName());
+                if (album != null) {
+                    album.setSelected(false);
+                }
+            }
+        }
         searchBar.clearSelection();
         player.stop();
 
@@ -156,9 +169,15 @@ public class User {
             return "You can't load an empty audio collection!";
         }
 
-        player.setSource(searchBar.getLastSelected(), searchBar.getLastSearchType());
-        searchBar.clearSelection();
+        if (searchBar.getLastSearchType().equals("album")) {
+            Album album = Artist.getAlbumDetails(searchBar.getLastSelected().getName());
+            if (album != null) {
+                album.setSelected(true);
+            }
+        }
 
+        player.setSource(searchBar.getLastSelected(), searchBar.getLastSearchType());
+        //searchBar.clearSelection();
         player.pause();
 
         return "Playback loaded successfully.";

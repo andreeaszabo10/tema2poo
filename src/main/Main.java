@@ -119,6 +119,9 @@ public final class Main {
                 case "addPodcast" -> outputs.add(CommandRunner.addPodcast(command));
                 case "removePodcast" -> outputs.add(CommandRunner.removePodcast(command));
                 case "printCurrentPage" -> outputs.add(CommandRunner.printCurrentPage(command));
+                case "getTop5Albums" -> outputs.add(CommandRunner.getTop5Albums(command));
+                case "removeAlbum" -> outputs.add(CommandRunner.removeAlbum(command));
+                case "changePage" -> outputs.add(CommandRunner.changePage(command));
                 //default -> System.out.println("Invalid command " + commandName);
             }
         }

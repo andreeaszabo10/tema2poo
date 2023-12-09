@@ -34,7 +34,7 @@ public final class Admin {
 
 
     /**
-     *
+     * gets a song by its name
      */
     public static Song getSongDetails(final String name) {
         for (Song song : songs) {
@@ -46,7 +46,7 @@ public final class Admin {
     }
 
     /**
-     *
+     * gets a podcast by its name
      */
     public static Podcast getPodcastDetails(final String name) {
         for (Podcast podcast : podcasts) {
@@ -83,6 +83,11 @@ public final class Admin {
         return onlineUsers;
     }
 
+    /**
+     * adds users.
+     *
+     * @param userInput the user that needs to be added
+     */
     public static void addUser(UserInput userInput) {
         User newUser = new User(userInput.getUsername(), userInput.getAge(), userInput.getCity());
         users.add(newUser);

@@ -88,15 +88,35 @@ public final class CommandRunner {
         objectNode.put("user", commandInput.getUsername());
         objectNode.put("command", commandInput.getCommand());
         objectNode.put("timestamp", commandInput.getTimestamp());
-        StringBuilder message = new StringBuilder("Liked songs:\n");
-        liked(message, user.getLikedSongs());
+        if (user.getPage().equals("home")){
+            StringBuilder message = new StringBuilder("Liked songs:\n");
+            liked(message, user.getLikedSongs());
 
-        message.append("\n\nFollowed playlists:\n");
-        followed(message, user.getFollowedPlaylists());
+            message.append("\n\nFollowed playlists:\n");
+            followed(message, user.getFollowedPlaylists());
 
-        objectNode.put("message", message.toString());
+            objectNode.put("message", message.toString());
+        } else if (user.getPage().equals("liked")) {
+            StringBuilder message = new StringBuilder("Liked songs:\n");
+            liked1(message, user.getLikedSongs());
+
+            message.append("\n\nFollowed playlists:\n");
+            followed1(message, user.getFollowedPlaylists());
+            objectNode.put("message", message.toString());
+        }
 
         return objectNode;
+    }
+
+    private static void liked1(StringBuilder message, ArrayList<Song> items) {
+        message.append("\t[");
+        if (!items.isEmpty()) {
+            message.append(items.get(0).getName());
+            for (int i = 1; i < items.size(); i++) {
+                message.append(", ").append(items.get(i).getName()).append(" - ").append(items.get(i).getArtist());
+            }
+        }
+        message.append("]");
     }
 
     private static void liked(StringBuilder message, ArrayList<Song> items) {
@@ -116,6 +136,18 @@ public final class CommandRunner {
             message.append(items.get(0).getName());
             for (int i = 1; i < items.size(); i++) {
                 message.append(", ").append(items.get(i).getName());
+            }
+        }
+        message.append("]");
+    }
+
+    private static void followed1(StringBuilder message, ArrayList<Playlist> items) {
+        message.append("\t[");
+        if (!items.isEmpty()) {
+            message.append(items.get(0).getName());
+            for (int i = 1; i < items.size(); i++) {
+                message.append(", ").append(items.get(i).getName());
+                message.append(" - ").append(items.get(i).getOwner());
             }
         }
         message.append("]");
@@ -725,6 +757,68 @@ public final class CommandRunner {
         objectNode.put("command", commandInput.getCommand());
         objectNode.put("timestamp", commandInput.getTimestamp());
         objectNode.put("result", objectMapper.valueToTree(playlists));
+
+        return objectNode;
+    }
+
+    /**
+     * Gets top 5 albums.
+     *
+     * @param commandInput the command input
+     * @return the top 5 albums
+     */
+    public static ObjectNode getTop5Albums(final CommandInput commandInput) {
+        List<String> albums = Artist.getTop5Albums();
+
+        ObjectNode objectNode = objectMapper.createObjectNode();
+        objectNode.put("command", commandInput.getCommand());
+        objectNode.put("timestamp", commandInput.getTimestamp());
+        objectNode.put("result", objectMapper.valueToTree(albums));
+
+        return objectNode;
+    }
+
+    /**
+     * change page
+     *
+     * @param commandInput the command input
+     */
+    public static ObjectNode changePage(final CommandInput commandInput) {
+        User user = Admin.getUser(commandInput.getUsername());
+        if (user != null) {
+            switch (commandInput.getNextPage()) {
+                case "Home" -> user.setPage("home");
+                case "LikedContent" -> user.setPage("liked");
+                case "Artist" -> user.setPage("artist");
+                case "Host" -> user.setPage("host");
+            }
+        }
+
+        ObjectNode objectNode = objectMapper.createObjectNode();
+        objectNode.put("command", commandInput.getCommand());
+        objectNode.put("user", commandInput.getUsername());
+        objectNode.put("timestamp", commandInput.getTimestamp());
+        objectNode.put("message", commandInput.getUsername() + " accessed "
+                + commandInput.getNextPage() + " successfully.");
+
+        return objectNode;
+    }
+
+    /**
+     * removes album
+     *
+     * @param commandInput the command input
+     */
+    public static ObjectNode removeAlbum(final CommandInput commandInput) {
+
+        ObjectNode objectNode = objectMapper.createObjectNode();
+        objectNode.put("command", commandInput.getCommand());
+        objectNode.put("user", commandInput.getUsername());
+        objectNode.put("timestamp", commandInput.getTimestamp());
+        Album album = Artist.getAlbumDetails(commandInput.getName());
+        if (album != null && (!album.getOwner().equals(commandInput.getUsername()) || album.isSelected())) {
+            objectNode.put("message", commandInput.getUsername() + " can't delete this album.");
+        }
 
         return objectNode;
     }
