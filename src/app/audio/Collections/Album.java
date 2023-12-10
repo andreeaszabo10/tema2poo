@@ -5,7 +5,6 @@ import app.audio.Files.Song;
 import fileio.input.SongInput;
 import lombok.Getter;
 
-import java.util.ArrayList;
 import java.util.List;
 
 @Getter
@@ -17,7 +16,7 @@ public final class Album extends AudioCollection {
     @Getter
     private boolean selected = false;
 
-    public void setSelected(boolean selected) {
+    public void setSelected(final boolean selected) {
         this.selected = selected;
     }
 
@@ -26,7 +25,8 @@ public final class Album extends AudioCollection {
 
         if (songs != null) {
             for (SongInput songInput : songs) {
-                Song aux = new Song(songInput.getName(), songInput.getDuration(), songInput.getAlbum(),
+                Song aux = new Song(songInput.getName(), songInput.getDuration(),
+                        songInput.getAlbum(),
                         songInput.getTags(), songInput.getLyrics(), songInput.getGenre(),
                         songInput.getReleaseYear(), songInput.getArtist());
                 likes = likes + (aux.getLikes());
@@ -36,15 +36,15 @@ public final class Album extends AudioCollection {
         return likes;
     }
 
-    public void setReleaseYear(Integer releaseYear) {
+    public void setReleaseYear(final Integer releaseYear) {
         this.releaseYear = releaseYear;
     }
 
-    public void setDescription(String description) {
+    public void setDescription(final String description) {
         this.description = description;
     }
 
-    public void setSongs(List<SongInput> songs) {
+    public void setSongs(final List<SongInput> songs) {
         this.songs = songs;
     }
 
@@ -54,11 +54,12 @@ public final class Album extends AudioCollection {
      * @param name  the name
      * @param owner the owner
      */
-    public Album(String name, String owner) {
+    public Album(final String name, final String owner) {
         super(name, owner);
     }
 
-    public Album(String name, String owner, Integer releaseYear, String description, List<SongInput> songs) {
+    public Album(final String name, final String owner, final Integer releaseYear,
+                 final String description, final List<SongInput> songs) {
         super(name, owner);
         this.releaseYear = releaseYear;
         this.description = description;

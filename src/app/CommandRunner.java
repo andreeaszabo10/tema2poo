@@ -4,7 +4,6 @@ import app.audio.Collections.Album;
 import app.audio.Collections.Playlist;
 import app.audio.Collections.PlaylistOutput;
 import app.audio.Collections.Podcast;
-import app.audio.Files.Episode;
 import app.audio.Files.Song;
 import app.player.PlayerStats;
 import app.searchBar.Filters;
@@ -30,6 +29,9 @@ public final class CommandRunner {
     private CommandRunner() {
     }
 
+    /**
+     * gets online users.
+     */
     public static ObjectNode getOnlineUsers(final CommandInput commandInput) {
         List<String> onlineUsers = Admin.getOnlineUsers();
 
@@ -46,6 +48,47 @@ public final class CommandRunner {
         return objectNode;
     }
 
+    /**
+     * gets all users.
+     */
+    public static ObjectNode getAllUsers(final CommandInput commandInput) {
+        List<String> allUsers = Admin.getAllUsers();
+
+        ObjectNode objectNode = JsonNodeFactory.instance.objectNode();
+        objectNode.put("command", "getAllUsers");
+        objectNode.put("timestamp", commandInput.getTimestamp());
+        ArrayNode resultArray = JsonNodeFactory.instance.arrayNode();
+        for (String all : allUsers) {
+            resultArray.add(all);
+        }
+
+        objectNode.set("result", resultArray);
+
+        return objectNode;
+    }
+
+    /**
+     * deletes a user
+     */
+    public static ObjectNode deleteUser(final CommandInput commandInput) {
+        List<String> allUsers = Admin.getAllUsers();
+
+        ObjectNode objectNode = JsonNodeFactory.instance.objectNode();
+        objectNode.put("command", "getAllUsers");
+        objectNode.put("timestamp", commandInput.getTimestamp());
+        ArrayNode resultArray = JsonNodeFactory.instance.arrayNode();
+        for (String all : allUsers) {
+            resultArray.add(all);
+        }
+
+        objectNode.set("result", resultArray);
+
+        return objectNode;
+    }
+
+    /**
+     * list all albums
+     */
     public static ObjectNode showAlbums(final CommandInput commandInput) {
         ObjectNode objectNode = JsonNodeFactory.instance.objectNode();
         objectNode.put("command", "showAlbums");
@@ -88,38 +131,50 @@ public final class CommandRunner {
         objectNode.put("user", commandInput.getUsername());
         objectNode.put("command", commandInput.getCommand());
         objectNode.put("timestamp", commandInput.getTimestamp());
-        if (user.getPage().equals("home")){
-            StringBuilder message = new StringBuilder("Liked songs:\n");
-            liked(message, user.getLikedSongs());
+        if (user != null && user.isOnline()) {
+            if (user.getPage().equals("home")) {
+                StringBuilder message = new StringBuilder("Liked songs:\n");
+                liked(message, user.getLikedSongs());
 
-            message.append("\n\nFollowed playlists:\n");
-            followed(message, user.getFollowedPlaylists());
+                message.append("\n\nFollowed playlists:\n");
+                followed(message, user.getFollowedPlaylists());
 
-            objectNode.put("message", message.toString());
-        } else if (user.getPage().equals("liked")) {
-            StringBuilder message = new StringBuilder("Liked songs:\n");
-            liked1(message, user.getLikedSongs());
+                objectNode.put("message", message.toString());
+            } else if (user.getPage().equals("liked")) {
+                StringBuilder message = new StringBuilder("Liked songs:\n");
+                liked1(message, user.getLikedSongs());
 
-            message.append("\n\nFollowed playlists:\n");
-            followed1(message, user.getFollowedPlaylists());
-            objectNode.put("message", message.toString());
+                message.append("\n\nFollowed playlists:\n");
+                followed1(message, user.getFollowedPlaylists());
+                objectNode.put("message", message.toString());
+            }
+        } else {
+            objectNode.put("message", commandInput.getUsername() + " is offline.");
         }
 
         return objectNode;
     }
 
-    private static void liked1(StringBuilder message, ArrayList<Song> items) {
+    /**
+     * gets online users.
+     */
+    private static void liked1(final StringBuilder message, final ArrayList<Song> items) {
         message.append("\t[");
         if (!items.isEmpty()) {
             message.append(items.get(0).getName());
+            message.append(" - ").append(items.get(0).getArtist());
             for (int i = 1; i < items.size(); i++) {
-                message.append(", ").append(items.get(i).getName()).append(" - ").append(items.get(i).getArtist());
+                message.append(", ").append(items.get(i).getName());
+                message.append(" - ").append(items.get(i).getArtist());
             }
         }
         message.append("]");
     }
 
-    private static void liked(StringBuilder message, ArrayList<Song> items) {
+    /**
+     * gets online users.
+     */
+    private static void liked(final StringBuilder message, final ArrayList<Song> items) {
         message.append("\t[");
         if (!items.isEmpty()) {
             message.append(items.get(0).getName());
@@ -130,7 +185,10 @@ public final class CommandRunner {
         message.append("]");
     }
 
-    private static void followed(StringBuilder message, ArrayList<Playlist> items) {
+    /**
+     * gets online users.
+     */
+    private static void followed(final StringBuilder message, final ArrayList<Playlist> items) {
         message.append("\t[");
         if (!items.isEmpty()) {
             message.append(items.get(0).getName());
@@ -141,10 +199,14 @@ public final class CommandRunner {
         message.append("]");
     }
 
-    private static void followed1(StringBuilder message, ArrayList<Playlist> items) {
+    /**
+     * gets online users.
+     */
+    private static void followed1(final StringBuilder message, final ArrayList<Playlist> items) {
         message.append("\t[");
         if (!items.isEmpty()) {
             message.append(items.get(0).getName());
+            message.append(" - ").append(items.get(0).getOwner());
             for (int i = 1; i < items.size(); i++) {
                 message.append(", ").append(items.get(i).getName());
                 message.append(" - ").append(items.get(i).getOwner());
@@ -280,7 +342,7 @@ public final class CommandRunner {
         }
         ObjectNode objectNode = objectMapper.createObjectNode();
         if (ok == 0) {
-            Admin.addUser(newUserInput);
+            Admin.addUser(newUserInput, commandInput);
             User user = Admin.getUser(commandInput.getUsername());
             String message = user.addUser(commandInput.getUsername());
 
@@ -328,7 +390,7 @@ public final class CommandRunner {
         User user = Admin.getUser(commandInput.getUsername());
         ObjectNode objectNode = objectMapper.createObjectNode();
         assert user != null;
-        if (user.isOnline()){
+        if (user.isOnline()) {
             Filters filters = new Filters(commandInput.getFilters());
             String type = commandInput.getType();
             ArrayList<String> results = user.search(filters, type);
@@ -503,7 +565,7 @@ public final class CommandRunner {
         User user = Admin.getUser(commandInput.getUsername());
         assert user != null;
         ObjectNode objectNode = objectMapper.createObjectNode();
-        if (user.isOnline()){
+        if (user.isOnline()) {
             String message = user.like();
             objectNode.put("command", commandInput.getCommand());
             objectNode.put("user", commandInput.getUsername());
@@ -816,7 +878,8 @@ public final class CommandRunner {
         objectNode.put("user", commandInput.getUsername());
         objectNode.put("timestamp", commandInput.getTimestamp());
         Album album = Artist.getAlbumDetails(commandInput.getName());
-        if (album != null && (!album.getOwner().equals(commandInput.getUsername()) || album.isSelected())) {
+        if (album != null && (!album.getOwner()
+                .equals(commandInput.getUsername()) || album.isSelected())) {
             objectNode.put("message", commandInput.getUsername() + " can't delete this album.");
         }
 

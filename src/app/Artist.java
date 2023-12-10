@@ -1,10 +1,7 @@
 package app;
 
 import app.audio.Collections.Album;
-import app.audio.Files.Song;
-import app.user.User;
 import lombok.Getter;
-import org.checkerframework.checker.units.qual.A;
 
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -37,29 +34,29 @@ public class Artist {
     /**
      * add artist
      */
-    public static void addArtist(Artist artist) {
+    public static void addArtist(final Artist artist) {
         if (artists == null) {
             artists = new ArrayList<>();
         }
         artists.add(artist);
     }
 
-    public static void setArtists(List<Artist> artists) {
+    public static void setArtists(final List<Artist> artists) {
         Artist.artists = artists;
     }
 
-    public void setName(String name) {
+    public void setName(final String name) {
         this.name = name;
     }
 
-    public static void setAlbums(List<Album> albums) {
+    public static void setAlbums(final List<Album> albums) {
         Artist.albums = albums;
     }
 
     /**
      * add album message
      */
-    public static String addAlbum(String username, int ok) {
+    public static String addAlbum(final String username, final int ok) {
         if (ok == 1) {
             return username + " has another album with the same name.";
         }
@@ -72,7 +69,7 @@ public class Artist {
     /**
      * add album
      */
-    public static void addAlbum(Album album) {
+    public static void addAlbum(final Album album) {
         if (albums == null) {
             albums = new ArrayList<>();
         }
@@ -100,7 +97,8 @@ public class Artist {
         List<String> topAlbums = new ArrayList<>();
 
         if (albums != null && !albums.isEmpty()) {
-            albums.sort(Comparator.comparingInt(Album::getLikes).reversed().thenComparing(Album::getName));
+            albums.sort(Comparator.comparingInt(Album::getLikes)
+                    .reversed().thenComparing(Album::getName));
 
             int count = 0;
             for (Album album : albums) {

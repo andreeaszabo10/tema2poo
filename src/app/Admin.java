@@ -1,15 +1,11 @@
 package app;
 
-import app.audio.Collections.Album;
 import app.audio.Collections.Playlist;
 import app.audio.Collections.Podcast;
 import app.audio.Files.Episode;
 import app.audio.Files.Song;
 import app.user.User;
-import fileio.input.EpisodeInput;
-import fileio.input.PodcastInput;
-import fileio.input.SongInput;
-import fileio.input.UserInput;
+import fileio.input.*;
 import lombok.Getter;
 
 import java.util.ArrayList;
@@ -23,7 +19,6 @@ public final class Admin {
     @Getter
     private static List<User> users = new ArrayList<>();
     private static List<Song> songs = new ArrayList<>();
-    private static List<Album> albums = new ArrayList<>();
     private static List<Podcast> podcasts = new ArrayList<>();
     @Getter
     private static int timestamp = 0;
@@ -57,13 +52,27 @@ public final class Admin {
         return null;
     }
 
-    public static void addSong(SongInput songInput) {
+    /**
+     * add song.
+     */
+    public static void addSong(final SongInput songInput) {
         songs.add(new Song(songInput.getName(), songInput.getDuration(), songInput.getAlbum(),
                 songInput.getTags(), songInput.getLyrics(), songInput.getGenre(),
                 songInput.getReleaseYear(), songInput.getArtist()));
     }
 
-    public static void addPodcast(PodcastInput podcastInput) {
+
+    /**
+     * add podcast.
+     */
+    public static void addPodcast(final PodcastInput podcastInput) {
+        function(podcastInput);
+    }
+
+    /**
+     * add a new podcast.
+     */
+    private static void function(final PodcastInput podcastInput) {
         List<Episode> episodes = new ArrayList<>();
         for (EpisodeInput episodeInput : podcastInput.getEpisodes()) {
             episodes.add(new Episode(episodeInput.getName(),
@@ -73,10 +82,13 @@ public final class Admin {
         podcasts.add(new Podcast(podcastInput.getName(), podcastInput.getOwner(), episodes));
     }
 
+    /**
+     * gets online users.
+     */
     public static List<String> getOnlineUsers() {
         List<String> onlineUsers = new ArrayList<>();
         for (User user : users) {
-            if (user.isOnline()) {
+            if (user.isOnline() && (user.getType() == null ||  user.getType().equals("user"))) {
                 onlineUsers.add(user.getUsername());
             }
         }
@@ -84,12 +96,37 @@ public final class Admin {
     }
 
     /**
+     * gets all users.
+     *
+     */
+    public static List<String> getAllUsers() {
+        List<String> allUsers = new ArrayList<>();
+        for (User user : users) {
+            if (user.getType() == null || user.getType().equals("user")) {
+                allUsers.add(user.getUsername());
+            }
+        }
+        for (User user : users) {
+            if (user.getType() != null && user.getType().equals("artist")) {
+                allUsers.add(user.getUsername());
+            }
+        }
+        for (User user : users) {
+            if (user.getType() != null && user.getType().equals("host")) {
+                allUsers.add(user.getUsername());
+            }
+        }
+        return allUsers;
+    }
+
+    /**
      * adds users.
      *
      * @param userInput the user that needs to be added
      */
-    public static void addUser(UserInput userInput) {
+    public static void addUser(final UserInput userInput, final CommandInput commandInput) {
         User newUser = new User(userInput.getUsername(), userInput.getAge(), userInput.getCity());
+        newUser.setType(commandInput.getType());
         users.add(newUser);
     }
 
@@ -128,13 +165,7 @@ public final class Admin {
     public static void setPodcasts(final List<PodcastInput> podcastInputList) {
         podcasts = new ArrayList<>();
         for (PodcastInput podcastInput : podcastInputList) {
-            List<Episode> episodes = new ArrayList<>();
-            for (EpisodeInput episodeInput : podcastInput.getEpisodes()) {
-                episodes.add(new Episode(episodeInput.getName(),
-                                         episodeInput.getDuration(),
-                                         episodeInput.getDescription()));
-            }
-            podcasts.add(new Podcast(podcastInput.getName(), podcastInput.getOwner(), episodes));
+            function(podcastInput);
         }
     }
 

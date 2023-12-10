@@ -1,7 +1,5 @@
 package fileio.input;
 
-import app.audio.Files.Episode;
-import app.audio.Files.Song;
 import lombok.Getter;
 
 import java.util.ArrayList;
@@ -52,43 +50,43 @@ public final class CommandInput {
     public CommandInput() {
     }
 
-    public void setEpisodes(ArrayList<EpisodeInput> episodes) {
+    public void setEpisodes(final ArrayList<EpisodeInput> episodes) {
         this.episodes = episodes;
     }
 
-    public void setSongs(List<SongInput> songs) {
+    public void setSongs(final List<SongInput> songs) {
         this.songs = songs;
     }
 
-    public void setReleaseYear(Integer releaseYear) {
+    public void setReleaseYear(final Integer releaseYear) {
         this.releaseYear = releaseYear;
     }
 
-    public void setName(String name) {
+    public void setName(final String name) {
         this.name = name;
     }
 
-    public void setDescription(String description) {
+    public void setDescription(final String description) {
         this.description = description;
     }
 
-    public void setDate(String date) {
+    public void setDate(final String date) {
         this.date = date;
     }
 
-    public void setPrice(Integer price) {
+    public void setPrice(final Integer price) {
         this.price = price;
     }
 
-    public void setAge(Integer age) {
+    public void setAge(final Integer age) {
         this.age = age;
     }
 
-    public void setNextPage(String nextPage) {
+    public void setNextPage(final String nextPage) {
         this.nextPage = nextPage;
     }
 
-    public void setCity(String city) {
+    public void setCity(final String city) {
         this.city = city;
     }
 

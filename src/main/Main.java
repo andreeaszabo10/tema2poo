@@ -122,7 +122,9 @@ public final class Main {
                 case "getTop5Albums" -> outputs.add(CommandRunner.getTop5Albums(command));
                 case "removeAlbum" -> outputs.add(CommandRunner.removeAlbum(command));
                 case "changePage" -> outputs.add(CommandRunner.changePage(command));
-                //default -> System.out.println("Invalid command " + commandName);
+                case "getAllUsers" -> outputs.add(CommandRunner.getAllUsers(command));
+                case "deleteUser" -> outputs.add(CommandRunner.deleteUser(command));
+                default -> System.out.println("Invalid command " + commandName);
             }
         }
 

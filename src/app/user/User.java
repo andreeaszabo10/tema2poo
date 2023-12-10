@@ -11,8 +11,6 @@ import app.player.PlayerStats;
 import app.searchBar.Filters;
 import app.searchBar.SearchBar;
 import app.utils.Enums;
-import fileio.input.EpisodeInput;
-import fileio.input.PodcastInput;
 import lombok.Getter;
 
 import java.util.ArrayList;
@@ -41,6 +39,8 @@ public class User {
     private boolean online = true;
     @Getter
     private String page = "home";
+    @Getter
+    private String type;
 
     /**
      * Instantiates a new User.
@@ -61,14 +61,18 @@ public class User {
         lastSearched = false;
     }
 
-    public void setPage(String page) {
+    public void setType(final String type) {
+        this.type = type;
+    }
+
+    public void setPage(final String page) {
         this.page = page;
     }
 
     /**
      * add new user to the list
      */
-    public String addUser(String username) {
+    public String addUser(final String username) {
         return "The username " + username + " has been added successfully.";
     }
 
@@ -77,7 +81,7 @@ public class User {
      *
      * @return the string
      */
-    public String switchConnectionStatus(User user, String username) {
+    public String switchConnectionStatus(final User user, final String username) {
         user.setOnline(!user.isOnline());
         player.setPaused(!user.isOnline());
         return username + " has changed status successfully.";
@@ -88,7 +92,7 @@ public class User {
      *
      * @return the string
      */
-    public boolean verifyRemove(Podcast podcast) {
+    public boolean verifyRemove(final Podcast podcast) {
         if (podcast != null) {
             List<Episode> episodes = podcast.getEpisodes();
             for (Episode episode : episodes) {
@@ -112,7 +116,7 @@ public class User {
     public ArrayList<String> search(final Filters filters, final String type) {
         if (searchBar.getLastSearchType() != null
                 && searchBar.getLastSearchType().equals("album")) {
-            if (searchBar.getLastSelected() != null){
+            if (searchBar.getLastSelected() != null) {
                 Album album = Artist.getAlbumDetails(searchBar.getLastSelected().getName());
                 if (album != null) {
                     album.setSelected(false);
@@ -183,7 +187,7 @@ public class User {
         return "Playback loaded successfully.";
     }
 
-    public void setOnline(boolean online) {
+    public void setOnline(final boolean online) {
         this.online = online;
     }
 
