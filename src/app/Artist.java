@@ -16,6 +16,8 @@ public class Artist {
     private String name;
     @Getter
     private static List<Album> albums;
+    private static final int LIMIT = 5;
+    private static final int CASE = 3;
 
     /**
      * get artist
@@ -45,6 +47,9 @@ public class Artist {
         Artist.artists = artists;
     }
 
+    /**
+     * sets name
+     */
     public void setName(final String name) {
         this.name = name;
     }
@@ -60,7 +65,7 @@ public class Artist {
         if (ok == 1) {
             return username + " has another album with the same name.";
         }
-        if (ok == 3) {
+        if (ok == CASE) {
             return username + " has the same song at least twice in this album.";
         }
         return username + " has added new album successfully.";
@@ -74,6 +79,13 @@ public class Artist {
             albums = new ArrayList<>();
         }
         albums.add(album);
+    }
+
+    /**
+     * remove album
+     */
+    public static void removeAlbum(final Album album) {
+        albums.remove(album);
     }
 
     /**
@@ -102,7 +114,7 @@ public class Artist {
 
             int count = 0;
             for (Album album : albums) {
-                if (count >= 5) {
+                if (count >= LIMIT) {
                     break;
                 }
                 topAlbums.add(album.getName());

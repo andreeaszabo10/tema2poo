@@ -20,6 +20,9 @@ public final class Album extends AudioCollection {
         this.selected = selected;
     }
 
+    /**
+     * gets likes
+     */
     public int getLikes() {
         int likes = 0;
 

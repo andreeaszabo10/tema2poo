@@ -4,6 +4,7 @@ import app.audio.Collections.Album;
 import app.audio.Collections.Playlist;
 import app.audio.Collections.PlaylistOutput;
 import app.audio.Collections.Podcast;
+import app.audio.Files.Episode;
 import app.audio.Files.Song;
 import app.player.PlayerStats;
 import app.searchBar.Filters;
@@ -15,6 +16,7 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import fileio.input.*;
 
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 
 /**
@@ -25,6 +27,7 @@ public final class CommandRunner {
      * The Object mapper.
      */
     private static final ObjectMapper objectMapper = new ObjectMapper();
+    private static final int CASE = 3;
 
     private CommandRunner() {
     }
@@ -74,14 +77,46 @@ public final class CommandRunner {
         List<String> allUsers = Admin.getAllUsers();
 
         ObjectNode objectNode = JsonNodeFactory.instance.objectNode();
-        objectNode.put("command", "getAllUsers");
+        objectNode.put("command", "deleteUser");
+        objectNode.put("user", commandInput.getUsername());
         objectNode.put("timestamp", commandInput.getTimestamp());
-        ArrayNode resultArray = JsonNodeFactory.instance.arrayNode();
-        for (String all : allUsers) {
-            resultArray.add(all);
+        User toDelete = Admin.getUser(commandInput.getUsername());
+        boolean okToDelete = true;
+        for (String name : allUsers) {
+            User user = Admin.getUser(name);
+            if (user != null && toDelete != null
+                    && toDelete.getType() != null && toDelete.getType().equals("artist")
+                    && user.getPlayer().getCurrentAudioFile() != null) {
+                String song = user.getPlayer().getCurrentAudioFile().getName();
+                Song aux = Admin.getSongDetails(song);
+                if (aux != null && aux.getArtist().equals(commandInput.getUsername())) {
+                    okToDelete = false;
+                }
+            }
+            if (user != null && toDelete != null
+                    && toDelete.getType() != null && toDelete.getType().equals("host")
+                    && user.getPlayer().getCurrentAudioFile() != null) {
+                if (user.getPlayer().getType().equals("podcast")) {
+                    Episode episode = (Episode) user.getPlayer().getCurrentAudioFile();
+                    for (Podcast podcast : Admin.getPodcasts()) {
+                        if (podcast.getOwner().equals(commandInput.getUsername())) {
+                            for (Episode episode1 : podcast.getEpisodes()) {
+                                if (episode1.getName().equals(episode.getName())) {
+                                    okToDelete = false;
+                                    break;
+                                }
+                            }
+                        }
+                    }
+                }
+            }
         }
-
-        objectNode.set("result", resultArray);
+        if (okToDelete) {
+            objectNode.put("message", commandInput.getUsername() + " was successfully deleted.");
+            Admin.deleteUser(toDelete, commandInput);
+        } else {
+            objectNode.put("message", commandInput.getUsername() + " can't be deleted.");
+        }
 
         return objectNode;
     }
@@ -110,6 +145,37 @@ public final class CommandRunner {
 
                 albumNode.set("songs", songsArray);
                 resultArray.add(albumNode);
+            }
+        }
+
+        objectNode.set("result", resultArray);
+
+        return objectNode;
+    }
+
+    /**
+     * list all podcasts
+     */
+    public static ObjectNode showPodcasts(final CommandInput commandInput) {
+        ObjectNode objectNode = JsonNodeFactory.instance.objectNode();
+        objectNode.put("command", "showPodcasts");
+        objectNode.put("user", commandInput.getUsername());
+        objectNode.put("timestamp", commandInput.getTimestamp());
+
+        ArrayNode resultArray = JsonNodeFactory.instance.arrayNode();
+        List<Podcast> podcasts = Admin.getPodcasts();
+        for (Podcast podcast : podcasts) {
+            if (podcast.getOwner().equals(commandInput.getUsername())) {
+                ObjectNode node = JsonNodeFactory.instance.objectNode();
+                node.put("name", podcast.getName());
+
+                ArrayNode episodes = JsonNodeFactory.instance.arrayNode();
+                for (Episode episode : podcast.getEpisodes()) {
+                    episodes.add(episode.getName());
+                }
+
+                node.set("episodes", episodes);
+                resultArray.add(node);
             }
         }
 
@@ -222,20 +288,39 @@ public final class CommandRunner {
      * @return the object node
      */
     public static ObjectNode addPodcast(final CommandInput commandInput) {
-        PodcastInput newPodcast = new PodcastInput();
-        newPodcast.setEpisodes(commandInput.getEpisodes());
-        newPodcast.setName(commandInput.getName());
-        newPodcast.setOwner(commandInput.getUsername());
-
-        Admin.addPodcast(newPodcast);
+        User user = Admin.getUser(commandInput.getUsername());
+        int ok = 0;
+        if (user != null && user.getType() != null && user.getType().equals("host")) {
+            PodcastInput newPodcast = new PodcastInput();
+            newPodcast.setEpisodes(commandInput.getEpisodes());
+            newPodcast.setName(commandInput.getName());
+            newPodcast.setOwner(commandInput.getUsername());
+            List<Podcast> podcasts = Admin.getPodcasts();
+            for (Podcast podcast : podcasts) {
+                if (podcast.getName().equals(commandInput.getName())) {
+                    ok = 1;
+                    break;
+                }
+            }
+            if (ok == 0) {
+                Admin.addPodcast(newPodcast);
+            }
+        }
 
         ObjectNode objectNode = objectMapper.createObjectNode();
         objectNode.put("command", commandInput.getCommand());
         objectNode.put("user", commandInput.getUsername());
         objectNode.put("timestamp", commandInput.getTimestamp());
-        objectNode.put("message",
-                String.format("%s has added new podcast successfully.",
-                        commandInput.getUsername()));
+        if (user != null && user.getType() != null && user.getType().equals("host") && ok != 1) {
+            objectNode.put("message",
+                    String.format("%s has added new podcast successfully.",
+                            commandInput.getUsername()));
+        } else if (ok == 0) {
+            objectNode.put("message", commandInput.getUsername() + " is not a host.");
+        } else {
+            objectNode.put("message",
+                    commandInput.getUsername() + " has another podcast with the same name.");
+        }
 
         return objectNode;
     }
@@ -262,7 +347,13 @@ public final class CommandRunner {
         objectNode.put("timestamp", commandInput.getTimestamp());
         if (verify) {
             objectNode.put("message",
-                    String.format("%s has added new podcast successfully.",
+                    String.format("%s deleted the podcast successfully.",
+                            commandInput.getUsername()));
+            Admin.removePodcast(commandInput);
+
+        } else if (podcast == null || !podcast.getOwner().equals(commandInput.getUsername())) {
+            objectNode.put("message",
+                    String.format("%s doesn't have a podcast with the given name.",
                             commandInput.getUsername()));
         } else {
             objectNode.put("message",
@@ -273,6 +364,10 @@ public final class CommandRunner {
         return objectNode;
     }
 
+
+    /**
+     * add album
+     */
     public static ObjectNode addAlbum(final CommandInput commandInput) {
         Album newAlbum = new Album(commandInput.getName(), commandInput.getUsername());
         newAlbum.setDescription(commandInput.getDescription());
@@ -294,7 +389,7 @@ public final class CommandRunner {
         for (SongInput song1 : commandInput.getSongs()) {
             for (Song song2 : Admin.getSongs()) {
                 if (song1.getName().equals(song2.getName())) {
-                    ok = 3;
+                    ok = CASE;
                     break;
                 }
             }
@@ -304,7 +399,7 @@ public final class CommandRunner {
             for (int j = i + 1; j < n; j++) {
                 if (commandInput.getSongs().get(i).getName()
                         .equals(commandInput.getSongs().get(j).getName())) {
-                    ok = 3;
+                    ok = CASE;
                     break;
                 }
             }
@@ -327,6 +422,10 @@ public final class CommandRunner {
         return objectNode;
     }
 
+
+    /**
+     * add user
+     */
     public static ObjectNode addUser(final CommandInput commandInput) {
         UserInput newUserInput = new UserInput();
         newUserInput.setUsername(commandInput.getUsername());
@@ -361,6 +460,10 @@ public final class CommandRunner {
         return objectNode;
     }
 
+
+    /**
+     * switch connection status
+     */
     public static ObjectNode switchConnectionStatus(final CommandInput commandInput) {
         User user = Admin.getUser(commandInput.getUsername());
         String message;
@@ -852,7 +955,7 @@ public final class CommandRunner {
                 case "Home" -> user.setPage("home");
                 case "LikedContent" -> user.setPage("liked");
                 case "Artist" -> user.setPage("artist");
-                case "Host" -> user.setPage("host");
+                default -> user.setPage("host");
             }
         }
 

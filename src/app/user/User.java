@@ -32,8 +32,11 @@ public class User {
     private ArrayList<Song> likedSongs;
     @Getter
     private ArrayList<Playlist> followedPlaylists;
+    @Getter
     private final Player player;
+    @Getter
     private final SearchBar searchBar;
+    @Getter
     private boolean lastSearched;
     @Getter
     private boolean online = true;
@@ -61,10 +64,17 @@ public class User {
         lastSearched = false;
     }
 
+
+    /**
+     * sets type
+     */
     public void setType(final String type) {
         this.type = type;
     }
 
+    /**
+     * sets page
+     */
     public void setPage(final String page) {
         this.page = page;
     }
@@ -133,6 +143,11 @@ public class User {
         for (LibraryEntry libraryEntry : libraryEntries) {
             results.add(libraryEntry.getName());
         }
+        List<User> entries = searchBar.search(filters, type, searchBar);
+
+        for (User user : entries) {
+            results.add(user.getUsername());
+        }
         return results;
     }
 
@@ -150,12 +165,15 @@ public class User {
         lastSearched = false;
 
         LibraryEntry selected = searchBar.select(itemNumber);
+        User select = searchBar.selects(itemNumber);
 
-        if (selected == null) {
+        if (selected == null && select == null) {
             return "The selected ID is too high.";
         }
-
-        return "Successfully selected %s.".formatted(selected.getName());
+        if (selected != null) {
+            return "Successfully selected %s.".formatted(selected.getName());
+        }
+        return "Successfully selected %s's page.".formatted(select.getUsername());
     }
 
     /**

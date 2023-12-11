@@ -43,7 +43,11 @@ public class PlayerStats {
         this.shuffle = shuffle;
     }
 
-    public void setPaused(boolean paused) {
+
+    /**
+     * sets paused
+     */
+    public void setPaused(final boolean paused) {
         this.paused = paused;
     }
 }

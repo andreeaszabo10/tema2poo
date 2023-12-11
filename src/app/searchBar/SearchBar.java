@@ -4,27 +4,20 @@ package app.searchBar;
 import app.Admin;
 import app.Artist;
 import app.audio.LibraryEntry;
+import app.user.User;
 import lombok.Getter;
 
 import java.util.ArrayList;
 import java.util.List;
 
-import static app.searchBar.FilterUtils.filterByAlbum;
-import static app.searchBar.FilterUtils.filterByArtist;
-import static app.searchBar.FilterUtils.filterByFollowers;
-import static app.searchBar.FilterUtils.filterByGenre;
-import static app.searchBar.FilterUtils.filterByLyrics;
-import static app.searchBar.FilterUtils.filterByName;
-import static app.searchBar.FilterUtils.filterByOwner;
-import static app.searchBar.FilterUtils.filterByPlaylistVisibility;
-import static app.searchBar.FilterUtils.filterByReleaseYear;
-import static app.searchBar.FilterUtils.filterByTags;
+import static app.searchBar.FilterUtils.*;
 
 /**
  * The type Search bar.
  */
 public final class SearchBar {
     private List<LibraryEntry> results;
+    private List<User> result;
     private final String user;
     private static final Integer MAX_RESULTS = 5;
     @Getter
@@ -32,6 +25,8 @@ public final class SearchBar {
 
     @Getter
     private LibraryEntry lastSelected;
+    @Getter
+    private User lastSelectedUser;
 
     /**
      * Instantiates a new Search bar.
@@ -138,7 +133,6 @@ public final class SearchBar {
                     }
                 }
                 break;
-
             default:
                 entries = new ArrayList<>();
         }
@@ -150,6 +144,54 @@ public final class SearchBar {
         this.results = entries;
         this.lastSearchType = type;
         return this.results;
+    }
+
+    /**
+     * Search list.
+     *
+     * @param filters the filters
+     * @param type    the type
+     * @return the list
+     */
+    public List<User> search(final Filters filters, final String type, final SearchBar searchBar) {
+        List<User> entries;
+
+        switch (type) {
+            case "artist":
+                entries = new ArrayList<>();
+                for (User user : Admin.getUsers()) {
+                    if (user.getType() != null && user.getType().equals("artist")) {
+                        entries.add(user);
+                    }
+                }
+
+                if (filters.getName() != null) {
+                    entries = filterName(entries, filters.getName());
+                }
+                break;
+            case "host":
+                entries = new ArrayList<>();
+                for (User user : Admin.getUsers()) {
+                    if (user.getType() != null && user.getType().equals("host")) {
+                        entries.add(user);
+                    }
+                }
+
+                if (filters.getName() != null) {
+                    entries = filterName(entries, filters.getName());
+                }
+                break;
+
+            default:
+                entries = new ArrayList<>();
+        }
+
+        while (entries.size() > MAX_RESULTS) {
+            entries.remove(entries.size() - 1);
+        }
+        this.result = entries;
+        this.lastSearchType = type;
+        return this.result;
     }
 
     /**
@@ -168,6 +210,25 @@ public final class SearchBar {
             results.clear();
 
             return lastSelected;
+        }
+    }
+
+    /**
+     * Select user page.
+     *
+     * @param itemNumber the item number
+     * @return the user
+     */
+    public User selects(final Integer itemNumber) {
+        if (this.result.size() < itemNumber) {
+            result.clear();
+
+            return null;
+        } else {
+            lastSelectedUser =  this.result.get(itemNumber - 1);
+            result.clear();
+
+            return lastSelectedUser;
         }
     }
 }

@@ -1,5 +1,6 @@
 package app;
 
+import app.audio.Collections.Album;
 import app.audio.Collections.Playlist;
 import app.audio.Collections.Podcast;
 import app.audio.Files.Episode;
@@ -10,6 +11,7 @@ import lombok.Getter;
 
 import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.Iterator;
 import java.util.List;
 
 /**
@@ -27,6 +29,71 @@ public final class Admin {
     private Admin() {
     }
 
+    /**
+     * removes a song from the list
+     */
+    public static void removeSongByName(final List<Song> songs, final String songName) {
+        Iterator<Song> iterator = songs.iterator();
+        while (iterator.hasNext()) {
+            Song song = iterator.next();
+            if (song.getName().equals(songName)) {
+                iterator.remove();
+                return;
+            }
+        }
+    }
+
+    /**
+     * removes a podcast from the list
+     */
+    public static void deletePodcast(final List<Podcast> podcasts, final String name) {
+        Iterator<Podcast> iterator = podcasts.iterator();
+        while (iterator.hasNext()) {
+            Podcast podcast = iterator.next();
+            if (podcast.getName().equals(name)) {
+                iterator.remove();
+                return;
+            }
+        }
+    }
+
+    /**
+     * removes a podcast
+     */
+    public static void removePodcast(CommandInput commandInput) {
+        deletePodcast(podcasts, commandInput.getName());
+    }
+
+    /**
+     * deletes user and all of its playlists/albums
+     */
+    public static void deleteUser(final User toDelete, final CommandInput commandInput) {
+        if (toDelete != null && toDelete.getType() != null && toDelete.getType().equals("artist")) {
+            for (Album album : Artist.getAlbums()) {
+                if (album.getOwner().equals(commandInput.getUsername())) {
+                    for (SongInput song : album.getSongs()) {
+                        removeSongByName(songs, song.getName());
+                        for (User user : users) {
+                            removeSongByName(user.getLikedSongs(), song.getName());
+                        }
+                    }
+                }
+            }
+            Artist.getAlbums().removeIf(album -> album.getOwner()
+                    .equals(commandInput.getUsername()));
+        }
+        if (toDelete != null && (toDelete.getType() == null || toDelete.getType().equals("user"))) {
+            for (Playlist playlist : toDelete.getFollowedPlaylists()) {
+                playlist.decreaseFollowers();
+            }
+            for (Playlist playlist : toDelete.getPlaylists()) {
+                for (User user : users) {
+                    user.getFollowedPlaylists().remove(playlist);
+                }
+            }
+        }
+        users.remove(toDelete);
+    }
 
     /**
      * gets a song by its name
