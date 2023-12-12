@@ -157,7 +157,7 @@ public class User {
      * @param itemNumber the item number
      * @return the string
      */
-    public String select(final int itemNumber) {
+    public String select(final int itemNumber, User user) {
         if (!lastSearched) {
             return "Please conduct a search before making a selection.";
         }
@@ -173,6 +173,7 @@ public class User {
         if (selected != null) {
             return "Successfully selected %s.".formatted(selected.getName());
         }
+        user.setPage(select.getUsername());
         return "Successfully selected %s's page.".formatted(select.getUsername());
     }
 
@@ -199,7 +200,7 @@ public class User {
         }
 
         player.setSource(searchBar.getLastSelected(), searchBar.getLastSearchType());
-        //searchBar.clearSelection();
+        searchBar.clearSelection();
         player.pause();
 
         return "Playback loaded successfully.";
@@ -336,7 +337,8 @@ public class User {
             return "Please load a source before liking or unliking.";
         }
 
-        if (!player.getType().equals("song") && !player.getType().equals("playlist")) {
+        if (!player.getType().equals("song") && !player.getType().equals("playlist")
+                && !player.getType().equals("album")) {
             return "Loaded source is not a song.";
         }
 

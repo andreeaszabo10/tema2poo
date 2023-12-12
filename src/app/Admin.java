@@ -350,6 +350,9 @@ public final class Admin {
         podcasts = new ArrayList<>();
         Artist.setAlbums(null);
         Artist.setArtists(null);
+        Host.setAnnouncements(null);
+        Artist.setEvents(null);
+        Artist.setMerch(null);
         timestamp = 0;
     }
 }

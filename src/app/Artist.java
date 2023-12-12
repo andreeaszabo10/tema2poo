@@ -16,8 +16,40 @@ public class Artist {
     private String name;
     @Getter
     private static List<Album> albums;
+    @Getter
+    private static List<Event> events;
+    @Getter
+    private static List<Merch> merch;
     private static final int LIMIT = 5;
     private static final int CASE = 3;
+
+    /**
+     * add event
+     */
+    public static void addEvent(final Event event) {
+        if (events == null) {
+            events = new ArrayList<>();
+        }
+        events.add(event);
+    }
+
+    public static void setEvents(List<Event> events) {
+        Artist.events = events;
+    }
+
+    public static void setMerch(List<Merch> merch) {
+        Artist.merch = merch;
+    }
+
+    /**
+     * add merch
+     */
+    public static void addMerch(final Merch merchandise) {
+        if (merch == null) {
+            merch = new ArrayList<>();
+        }
+        merch.add(merchandise);
+    }
 
     /**
      * get artist
