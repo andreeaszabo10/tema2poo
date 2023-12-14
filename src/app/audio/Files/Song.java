@@ -19,10 +19,6 @@ public final class Song extends AudioFile {
     @Getter
     private int likes;
 
-    public Song(String name, Integer duration) {
-        super(name, duration);
-    }
-
     public void setLikes(final int likes) {
         this.likes = likes;
     }

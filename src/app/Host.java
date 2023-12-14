@@ -11,10 +11,10 @@ public class Host {
     @Getter
     private static List<Announcement> announcements;
 
-    public Host() {
-    }
-
-    public static void setAnnouncements(List<Announcement> announcements) {
+    /**
+     * sets announcements
+     */
+    public static void setAnnouncements(final List<Announcement> announcements) {
         Host.announcements = announcements;
     }
 

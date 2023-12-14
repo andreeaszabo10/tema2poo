@@ -8,8 +8,6 @@ import java.util.Comparator;
 import java.util.List;
 
 public class Artist {
-    public Artist() {
-    }
     @Getter
     private static List<Artist> artists;
     @Getter
@@ -20,8 +18,17 @@ public class Artist {
     private static List<Event> events;
     @Getter
     private static List<Merch> merch;
+    @Getter
+    private int likes;
     private static final int LIMIT = 5;
     private static final int CASE = 3;
+
+    /**
+     * sets likes
+     */
+    public void setLikes(final int likes) {
+        this.likes = likes;
+    }
 
     /**
      * add event
@@ -33,17 +40,21 @@ public class Artist {
         events.add(event);
     }
 
-    public static void setEvents(List<Event> events) {
+    public static void setEvents(final List<Event> events) {
         Artist.events = events;
     }
 
-    public static void setMerch(List<Merch> merch) {
+    public static void setMerch(final List<Merch> merch) {
         Artist.merch = merch;
     }
 
-    public static void removeEvent(Event event) {
+    /**
+     * removes event
+     */
+    public static void removeEvent(final Event event) {
         events.remove(event);
     }
+
     /**
      * add merch
      */

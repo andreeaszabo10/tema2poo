@@ -1,12 +1,12 @@
 package app;
 
+import lombok.Getter;
+
+@Getter
 public class Announcement {
     private String name;
     private String owner;
     private String description;
-
-    public Announcement() {
-    }
 
     public Announcement(final String name, final String owner, final String description) {
         this.name = name;
@@ -14,26 +14,23 @@ public class Announcement {
         this.description = description;
     }
 
-    public String getName() {
-        return name;
-    }
-
+    /**
+     * sets name
+     */
     public void setName(final String name) {
         this.name = name;
     }
 
-    public String getOwner() {
-        return owner;
-    }
-
+    /**
+     * sets owner
+     */
     public void setOwner(final String owner) {
         this.owner = owner;
     }
 
-    public String getDescription() {
-        return description;
-    }
-
+    /**
+     * sets description
+     */
     public void setDescription(final String description) {
         this.description = description;
     }

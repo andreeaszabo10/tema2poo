@@ -2,7 +2,6 @@ package app.user;
 
 import app.Admin;
 import app.Artist;
-import app.CommandRunner;
 import app.audio.Collections.*;
 import app.audio.Files.AudioFile;
 import app.audio.Files.Episode;
@@ -13,7 +12,6 @@ import app.player.PlayerStats;
 import app.searchBar.Filters;
 import app.searchBar.SearchBar;
 import app.utils.Enums;
-import fileio.input.CommandInput;
 import lombok.Getter;
 
 import java.util.ArrayList;
@@ -160,7 +158,7 @@ public class User {
      * @param itemNumber the item number
      * @return the string
      */
-    public String select(final int itemNumber, User user) {
+    public String select(final int itemNumber, final User user) {
         if (!lastSearched) {
             return "Please conduct a search before making a selection.";
         }
@@ -209,6 +207,9 @@ public class User {
         return "Playback loaded successfully.";
     }
 
+    /**
+     * sets online status
+     */
     public void setOnline(final boolean online) {
         this.online = online;
     }
@@ -337,7 +338,7 @@ public class User {
      *
      * @return the string
      */
-    public String like(CommandInput commandInput) {
+    public String like() {
         if (player.getCurrentAudioFile() == null) {
             return "Please load a source before liking or unliking.";
         }

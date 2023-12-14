@@ -9,10 +9,7 @@ import app.user.User;
 import fileio.input.*;
 import lombok.Getter;
 
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.Iterator;
-import java.util.List;
+import java.util.*;
 
 /**
  * The type Admin.
@@ -24,7 +21,7 @@ public final class Admin {
     private static List<Podcast> podcasts = new ArrayList<>();
     @Getter
     private static int timestamp = 0;
-    private static final int LIMIT = 5;
+    static final int LIMIT = 5;
 
     private Admin() {
     }
@@ -60,7 +57,7 @@ public final class Admin {
     /**
      * removes a podcast
      */
-    public static void removePodcast(CommandInput commandInput) {
+    public static void removePodcast(final CommandInput commandInput) {
         deletePodcast(podcasts, commandInput.getName());
     }
 
@@ -304,15 +301,20 @@ public final class Admin {
      *
      * @return the top 5 songs
      */
-    public static List<String> getTop5Songs(CommandInput commandInput) {
+    public static List<String> getTop5Songs() {
         List<Song> sortedSongs = new ArrayList<>(songs);
-        sortedSongs.sort(Comparator.comparingInt(Song::getLikes).reversed());
-        if (commandInput.getTimestamp() == 14849){
-            for (Song song : sortedSongs) {
-                System.out.println(song.getName());
-                System.out.println(song.getLikes());
+        for (Song song : songs) {
+            int likes = 0;
+            for (User user : users) {
+                for (Song song1 : user.getLikedSongs()) {
+                    if (song1.getName().equals(song.getName())) {
+                        likes++;
+                    }
+                }
             }
+            song.setLikes(likes);
         }
+        sortedSongs.sort(Comparator.comparingInt(Song::getLikes).reversed());
         List<String> topSongs = new ArrayList<>();
         int count = 0;
         for (Song song : sortedSongs) {
@@ -323,6 +325,37 @@ public final class Admin {
             count++;
         }
         return topSongs;
+    }
+
+    /**
+     * Gets top 5 songs.
+     *
+     * @return the top 5 songs
+     */
+    public static List<String> getTop5Artists() {
+        List<Artist> sortedArtists = new ArrayList<>(Artist.getArtists());
+        for (Artist artist : Artist.getArtists()) {
+            int likes = 0;
+            for (User user : users) {
+                for (Song song1 : user.getLikedSongs()) {
+                    if (song1.getArtist().equals(artist.getName())) {
+                        likes++;
+                    }
+                }
+            }
+            artist.setLikes(likes);
+        }
+        sortedArtists.sort(Comparator.comparingInt(Artist::getLikes).reversed());
+        List<String> topArtists = new ArrayList<>();
+        int count = 0;
+        for (Artist artist : sortedArtists) {
+            if (count >= LIMIT) {
+                break;
+            }
+            topArtists.add(artist.getName());
+            count++;
+        }
+        return topArtists;
     }
 
     /**

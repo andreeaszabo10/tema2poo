@@ -17,35 +17,52 @@ public class Event {
         this.date = date;
     }
 
+    /**
+     * gets name
+     */
     public String getName() {
         return name;
     }
 
+    /**
+     * sets name
+     */
     public void setName(final String name) {
         this.name = name;
     }
 
+    /**
+     * gets owner
+     */
     public String getOwner() {
         return owner;
     }
 
+    /**
+     * sets owner
+     */
     public void setOwner(final String owner) {
         this.owner = owner;
     }
 
+    /**
+     * gets description
+     */
     public String getDescription() {
         return description;
     }
 
+    /**
+     * sets description
+     */
     public void setDescription(final String description) {
         this.description = description;
     }
 
+    /**
+     * gets date
+     */
     public String getDate() {
         return date;
-    }
-
-    public void setDate(final String date) {
-        this.date = date;
     }
 }
