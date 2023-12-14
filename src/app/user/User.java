@@ -1,6 +1,8 @@
 package app.user;
 
+import app.Admin;
 import app.Artist;
+import app.CommandRunner;
 import app.audio.Collections.*;
 import app.audio.Files.AudioFile;
 import app.audio.Files.Episode;
@@ -11,6 +13,7 @@ import app.player.PlayerStats;
 import app.searchBar.Filters;
 import app.searchBar.SearchBar;
 import app.utils.Enums;
+import fileio.input.CommandInput;
 import lombok.Getter;
 
 import java.util.ArrayList;
@@ -327,12 +330,14 @@ public class User {
         return "Rewound successfully.";
     }
 
+
+
     /**
      * Like string.
      *
      * @return the string
      */
-    public String like() {
+    public String like(CommandInput commandInput) {
         if (player.getCurrentAudioFile() == null) {
             return "Please load a source before liking or unliking.";
         }
@@ -343,14 +348,18 @@ public class User {
         }
 
         Song song = (Song) player.getCurrentAudioFile();
-
-        if (likedSongs.contains(song)) {
-            likedSongs.remove(song);
+        int ok = 0;
+        for (Song song1 : likedSongs) {
+            if (song1.getName().equals(song.getName())) {
+                ok = 1;
+                break;
+            }
+        }
+        if (ok == 1) {
+            Admin.removeSongByName(likedSongs, song.getName());
             song.dislike();
-
             return "Unlike registered successfully.";
         }
-
         likedSongs.add(song);
         song.like();
         return "Like registered successfully.";

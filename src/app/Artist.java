@@ -41,6 +41,9 @@ public class Artist {
         Artist.merch = merch;
     }
 
+    public static void removeEvent(Event event) {
+        events.remove(event);
+    }
     /**
      * add merch
      */

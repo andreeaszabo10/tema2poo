@@ -129,6 +129,7 @@ public final class Main {
                 case "addMerch" -> outputs.add(CommandRunner.addMerch(command));
                 case "addAnnouncement" -> outputs.add(CommandRunner.addAnnouncement(command));
                 case "removeAnnouncement" -> outputs.add(CommandRunner.removeAnnouncement(command));
+                case "removeEvent" -> outputs.add(CommandRunner.removeEvent(command));
                 default -> System.out.println("Invalid command " + commandName);
             }
         }

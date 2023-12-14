@@ -16,9 +16,10 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import fileio.input.*;
 import org.checkerframework.checker.units.qual.A;
 
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
+import java.time.DateTimeException;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
+import java.util.*;
 
 /**
  * The type Command runner.
@@ -52,12 +53,28 @@ public final class CommandRunner {
         return objectNode;
     }
 
+    public static boolean isValidDate(String dateStr) {
+        DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("dd-MM-yyyy");
+
+        try {
+            LocalDate date = LocalDate.parse(dateStr, dateFormatter);
+
+            return date.getDayOfMonth() <= 31
+                    && date.getMonthValue() <= 12
+                    && date.getYear() >= 1900
+                    && date.getYear() <= 2023
+                    && !(date.getMonthValue() == 2 && date.getDayOfMonth() > (date.isLeapYear() ? 29 : 28));
+        } catch (DateTimeException e) {
+            return false;
+        }
+    }
     /**
      * adds event
      */
     public static ObjectNode addEvent(final CommandInput commandInput) {
         User user = Admin.getUser(commandInput.getUsername());
-        if (user != null && user.getType() != null && user.getType().equals("artist")) {
+        boolean aux = isValidDate(commandInput.getDate());
+        if (user != null && user.getType() != null && user.getType().equals("artist") && aux) {
             Event event = new Event(commandInput.getName(), commandInput.getUsername(),
                     commandInput.getDescription(), commandInput.getDate());
             Artist.addEvent(event);
@@ -66,7 +83,9 @@ public final class CommandRunner {
         objectNode.put("command", "addEvent");
         objectNode.put("user", commandInput.getUsername());
         objectNode.put("timestamp", commandInput.getTimestamp());
-        if (user != null && user.getType() != null && user.getType().equals("artist")) {
+        if (!aux) {
+            objectNode.put("message",  "Event for " + commandInput.getUsername() + " does not have a valid date.");
+        } else if (user != null && user.getType() != null && user.getType().equals("artist")) {
             objectNode.put("message", commandInput.getUsername()
                     + " has added new event successfully.");
         } else if (user == null) {
@@ -144,6 +163,37 @@ public final class CommandRunner {
         } else {
             objectNode.put("message",
                     commandInput.getUsername() + " has successfully added new announcement.");
+        }
+
+        return objectNode;
+    }
+
+    /**
+     * removes announcement
+     */
+    public static ObjectNode removeEvent(final CommandInput commandInput) {
+        User user = Admin.getUser(commandInput.getUsername());
+        int ok = 0;
+        for (Event event : Artist.getEvents()) {
+            if (event.getName().equals(commandInput.getName())) {
+                Artist.removeEvent(event);
+                ok = 1;
+            }
+        }
+
+        ObjectNode objectNode = JsonNodeFactory.instance.objectNode();
+        objectNode.put("command", "removeEvent");
+        objectNode.put("user", commandInput.getUsername());
+        objectNode.put("timestamp", commandInput.getTimestamp());
+        if (user == null) {
+            objectNode.put("message",
+                    "The username " + commandInput.getUsername() + " doesn't exist.");
+        } else if (ok == 0) {
+            objectNode.put("message",
+                    commandInput.getUsername() + " has no event with the given name.");
+        } else {
+            objectNode.put("message",
+                    commandInput.getUsername() + " deleted the event successfully.");
         }
 
         return objectNode;
@@ -297,7 +347,7 @@ public final class CommandRunner {
                     albumNode.put("name", album.getName());
 
                     ArrayNode songsArray = JsonNodeFactory.instance.arrayNode();
-                    for (SongInput song : album.getSongs()) {
+                    for (Song song : album.getSongs()) {
                         songsArray.add(song.getName());
                     }
 
@@ -359,8 +409,17 @@ public final class CommandRunner {
         if (user != null && user.isOnline()) {
             if (user.getPage().equals("home")) {
                 StringBuilder message = new StringBuilder("Liked songs:\n");
-                liked(message, user.getLikedSongs());
+                ArrayList<Song> liked = new ArrayList<>(user.getLikedSongs());
+                liked.sort(Comparator.comparingInt(Song::getLikes).reversed());
+                ArrayList<Song> first5 = new ArrayList<>(liked.subList(0, Math.min(liked.size(), 5)));
+                liked(message, first5);
+                if (commandInput.getTimestamp() == 10279) {
+                    for (Song song : user.getLikedSongs()) {
+                        System.out.println(song.getName());
+                        System.out.println(song.getLikes());
 
+                    }
+                }
                 message.append("\n\nFollowed playlists:\n");
                 followed(message, user.getFollowedPlaylists());
 
@@ -680,7 +739,14 @@ public final class CommandRunner {
         if (user != null && user.getType().equals("artist")) {
             Album newAlbum = new Album(commandInput.getName(), commandInput.getUsername());
             newAlbum.setDescription(commandInput.getDescription());
-            newAlbum.setSongs(commandInput.getSongs());
+            List<Song> songs1 = new ArrayList<>();
+            for (SongInput song : commandInput.getSongs()) {
+                Song aux = new Song(song.getName(), song.getDuration(),
+                        song.getAlbum(), song.getTags(), song.getLyrics(),
+                        song.getGenre(), song.getReleaseYear(), song.getArtist());
+                songs1.add(aux);
+            }
+            newAlbum.setSongs(songs1);
             newAlbum.setReleaseYear(commandInput.getReleaseYear());
             Artist artist = new Artist();
             artist.setName(commandInput.getUsername());
@@ -695,20 +761,28 @@ public final class CommandRunner {
                     }
                 }
             }
-            int n = commandInput.getSongs().size();
-            for (int i = 0; i < n - 1; i++) {
-                for (int j = i + 1; j < n; j++) {
-                    if (commandInput.getSongs().get(i).getName()
-                            .equals(commandInput.getSongs().get(j).getName())) {
-                        ok = CASE;
-                        break;
+            if (ok != 1) {
+                int n = commandInput.getSongs().size();
+                for (int i = 0; i < n - 1; i++) {
+                    for (int j = i + 1; j < n; j++) {
+                        if (commandInput.getSongs().get(i).getName()
+                                .equals(commandInput.getSongs().get(j).getName())) {
+                            ok = CASE;
+                            break;
+                        }
                     }
                 }
             }
             if (ok == 0) {
                 List<SongInput> songs = commandInput.getSongs();
-                for (SongInput song : songs) {
-                    Admin.addSong(song);
+                for (SongInput songInput : songs) {
+                    Song newSong = new Song(songInput.getName(), songInput.getDuration(), songInput.getAlbum(),
+                            songInput.getTags(), songInput.getLyrics(), songInput.getGenre(),
+                            songInput.getReleaseYear(), songInput.getArtist());
+                    if (!Admin.getSongs().contains(newSong)) {
+                        Admin.addSong(songInput);
+                    }
+
                 }
                 Artist.addAlbum(newAlbum);
             }
@@ -975,7 +1049,7 @@ public final class CommandRunner {
         assert user != null;
         ObjectNode objectNode = objectMapper.createObjectNode();
         if (user.isOnline()) {
-            String message = user.like();
+            String message = user.like(commandInput);
             objectNode.put("command", commandInput.getCommand());
             objectNode.put("user", commandInput.getUsername());
             objectNode.put("timestamp", commandInput.getTimestamp());
@@ -1205,7 +1279,7 @@ public final class CommandRunner {
      * @return the top 5 songs
      */
     public static ObjectNode getTop5Songs(final CommandInput commandInput) {
-        List<String> songs = Admin.getTop5Songs();
+        List<String> songs = Admin.getTop5Songs(commandInput);
 
         ObjectNode objectNode = objectMapper.createObjectNode();
         objectNode.put("command", commandInput.getCommand());
@@ -1290,13 +1364,13 @@ public final class CommandRunner {
         if (user == null) {
             objectNode.put("message", "The username "
                     + commandInput.getUsername() + " doesn't exist.");
+        } else if (!user.getType().equals("artist")) {
+            objectNode.put("message", commandInput.getUsername() + " is not an artist.");
         } else if (album == null) {
             objectNode.put("message", commandInput.getUsername()
                     + " doesn't have an album with the given name.");
         } else if ((!album.getOwner().equals(commandInput.getUsername()) || album.isSelected())) {
             objectNode.put("message", commandInput.getUsername() + " can't delete this album.");
-        } else if (!user.getType().equals("artist")) {
-            objectNode.put("message", commandInput.getUsername() + " is not an artist.");
         }
 
         return objectNode;

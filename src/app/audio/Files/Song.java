@@ -10,13 +10,22 @@ import java.util.List;
  */
 @Getter
 public final class Song extends AudioFile {
-    private final String album;
-    private final ArrayList<String> tags;
-    private final String lyrics;
-    private final String genre;
-    private final Integer releaseYear;
-    private final String artist;
-    private Integer likes;
+    private String album;
+    private ArrayList<String> tags;
+    private String lyrics;
+    private String genre;
+    private Integer releaseYear;
+    private String artist;
+    @Getter
+    private int likes;
+
+    public Song(String name, Integer duration) {
+        super(name, duration);
+    }
+
+    public void setLikes(final int likes) {
+        this.likes = likes;
+    }
 
     /**
      * Instantiates a new Song.

@@ -71,7 +71,7 @@ public final class Admin {
         if (toDelete != null && toDelete.getType() != null && toDelete.getType().equals("artist")) {
             for (Album album : Artist.getAlbums()) {
                 if (album.getOwner().equals(commandInput.getUsername())) {
-                    for (SongInput song : album.getSongs()) {
+                    for (Song song : album.getSongs()) {
                         removeSongByName(songs, song.getName());
                         for (User user : users) {
                             removeSongByName(user.getLikedSongs(), song.getName());
@@ -304,9 +304,15 @@ public final class Admin {
      *
      * @return the top 5 songs
      */
-    public static List<String> getTop5Songs() {
+    public static List<String> getTop5Songs(CommandInput commandInput) {
         List<Song> sortedSongs = new ArrayList<>(songs);
         sortedSongs.sort(Comparator.comparingInt(Song::getLikes).reversed());
+        if (commandInput.getTimestamp() == 14849){
+            for (Song song : sortedSongs) {
+                System.out.println(song.getName());
+                System.out.println(song.getLikes());
+            }
+        }
         List<String> topSongs = new ArrayList<>();
         int count = 0;
         for (Song song : sortedSongs) {

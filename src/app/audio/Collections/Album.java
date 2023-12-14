@@ -1,5 +1,6 @@
 package app.audio.Collections;
 
+import app.Admin;
 import app.audio.Files.AudioFile;
 import app.audio.Files.Song;
 import fileio.input.SongInput;
@@ -12,7 +13,7 @@ public final class Album extends AudioCollection {
 
     private Integer releaseYear;
     private String description;
-    private List<SongInput> songs;
+    private List<Song> songs;
     @Getter
     private boolean selected = false;
 
@@ -27,12 +28,8 @@ public final class Album extends AudioCollection {
         int likes = 0;
 
         if (songs != null) {
-            for (SongInput songInput : songs) {
-                Song aux = new Song(songInput.getName(), songInput.getDuration(),
-                        songInput.getAlbum(),
-                        songInput.getTags(), songInput.getLyrics(), songInput.getGenre(),
-                        songInput.getReleaseYear(), songInput.getArtist());
-                likes = likes + (aux.getLikes());
+            for (Song songInput : songs) {
+                likes = likes + songInput.getLikes();
             }
         }
 
@@ -47,7 +44,7 @@ public final class Album extends AudioCollection {
         this.description = description;
     }
 
-    public void setSongs(final List<SongInput> songs) {
+    public void setSongs(final List<Song> songs) {
         this.songs = songs;
     }
 
@@ -62,7 +59,7 @@ public final class Album extends AudioCollection {
     }
 
     public Album(final String name, final String owner, final Integer releaseYear,
-                 final String description, final List<SongInput> songs) {
+                 final String description, final List<Song> songs) {
         super(name, owner);
         this.releaseYear = releaseYear;
         this.description = description;
@@ -76,9 +73,6 @@ public final class Album extends AudioCollection {
 
     @Override
     public AudioFile getTrackByIndex(final int index) {
-        SongInput song = songs.get(index);
-        return new Song(song.getName(), song.getDuration(),
-                song.getAlbum(), song.getTags(), song.getLyrics(),
-                song.getGenre(), song.getReleaseYear(), song.getArtist());
+        return songs.get(index);
     }
 }
