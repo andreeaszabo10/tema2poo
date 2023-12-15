@@ -339,6 +339,7 @@ public class User {
      * @return the string
      */
     public String like() {
+        Admin admin = Admin.getInstance();
         if (player.getCurrentAudioFile() == null) {
             return "Please load a source before liking or unliking.";
         }
@@ -357,7 +358,7 @@ public class User {
             }
         }
         if (ok == 1) {
-            Admin.removeSongByName(likedSongs, song.getName());
+            admin.removeSongByName(likedSongs, song.getName());
             song.dislike();
             return "Unlike registered successfully.";
         }

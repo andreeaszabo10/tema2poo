@@ -16,20 +16,28 @@ import java.util.*;
  */
 public final class Admin {
     @Getter
-    private static List<User> users = new ArrayList<>();
-    private static List<Song> songs = new ArrayList<>();
-    private static List<Podcast> podcasts = new ArrayList<>();
+    private List<User> users = new ArrayList<>();
+    private List<Song> songs = new ArrayList<>();
+    private List<Podcast> podcasts = new ArrayList<>();
     @Getter
-    private static int timestamp = 0;
+    private int timestamp = 0;
     static final int LIMIT = 5;
+    private static Admin instance;
 
     private Admin() {
+    }
+
+    public static Admin getInstance() {
+        if (instance == null) {
+            instance = new Admin();
+        }
+        return instance;
     }
 
     /**
      * removes a song from the list
      */
-    public static void removeSongByName(final List<Song> songs, final String songName) {
+    public void removeSongByName(final List<Song> songs, final String songName) {
         Iterator<Song> iterator = songs.iterator();
         while (iterator.hasNext()) {
             Song song = iterator.next();
@@ -43,7 +51,7 @@ public final class Admin {
     /**
      * removes a podcast from the list
      */
-    public static void deletePodcast(final List<Podcast> podcasts, final String name) {
+    public void deletePodcast(final List<Podcast> podcasts, final String name) {
         Iterator<Podcast> iterator = podcasts.iterator();
         while (iterator.hasNext()) {
             Podcast podcast = iterator.next();
@@ -57,14 +65,14 @@ public final class Admin {
     /**
      * removes a podcast
      */
-    public static void removePodcast(final CommandInput commandInput) {
+    public void removePodcast(final CommandInput commandInput) {
         deletePodcast(podcasts, commandInput.getName());
     }
 
     /**
      * deletes user and all of its playlists/albums
      */
-    public static void deleteUser(final User toDelete, final CommandInput commandInput) {
+    public void deleteUser(final User toDelete, final CommandInput commandInput) {
         if (toDelete != null && toDelete.getType() != null && toDelete.getType().equals("artist")) {
             for (Album album : Artist.getAlbums()) {
                 if (album.getOwner().equals(commandInput.getUsername())) {
@@ -95,7 +103,7 @@ public final class Admin {
     /**
      * gets a song by its name
      */
-    public static Song getSongDetails(final String name) {
+    public Song getSongDetails(final String name) {
         for (Song song : songs) {
             if (song.getName().equals(name)) {
                 return song;
@@ -107,7 +115,7 @@ public final class Admin {
     /**
      * gets a podcast by its name
      */
-    public static Podcast getPodcastDetails(final String name) {
+    public Podcast getPodcastDetails(final String name) {
         for (Podcast podcast : podcasts) {
             if (podcast.getName().equals(name)) {
                 return podcast;
@@ -119,7 +127,7 @@ public final class Admin {
     /**
      * add song.
      */
-    public static void addSong(final SongInput songInput) {
+    public void addSong(final SongInput songInput) {
         songs.add(new Song(songInput.getName(), songInput.getDuration(), songInput.getAlbum(),
                 songInput.getTags(), songInput.getLyrics(), songInput.getGenre(),
                 songInput.getReleaseYear(), songInput.getArtist()));
@@ -129,14 +137,14 @@ public final class Admin {
     /**
      * add podcast.
      */
-    public static void addPodcast(final PodcastInput podcastInput) {
+    public void addPodcast(final PodcastInput podcastInput) {
         function(podcastInput);
     }
 
     /**
      * add a new podcast.
      */
-    private static void function(final PodcastInput podcastInput) {
+    private void function(final PodcastInput podcastInput) {
         List<Episode> episodes = new ArrayList<>();
         for (EpisodeInput episodeInput : podcastInput.getEpisodes()) {
             episodes.add(new Episode(episodeInput.getName(),
@@ -149,7 +157,7 @@ public final class Admin {
     /**
      * gets online users.
      */
-    public static List<String> getOnlineUsers() {
+    public List<String> getOnlineUsers() {
         List<String> onlineUsers = new ArrayList<>();
         for (User user : users) {
             if (user.isOnline() && (user.getType() == null ||  user.getType().equals("user"))) {
@@ -163,7 +171,7 @@ public final class Admin {
      * gets all users.
      *
      */
-    public static List<String> getAllUsers() {
+    public List<String> getAllUsers() {
         List<String> allUsers = new ArrayList<>();
         for (User user : users) {
             if (user.getType() == null || user.getType().equals("user")) {
@@ -188,7 +196,7 @@ public final class Admin {
      *
      * @param userInput the user that needs to be added
      */
-    public static void addUser(final UserInput userInput, final CommandInput commandInput) {
+    public void addUser(final UserInput userInput, final CommandInput commandInput) {
         User newUser = new User(userInput.getUsername(), userInput.getAge(), userInput.getCity());
         newUser.setType(commandInput.getType());
         users.add(newUser);
@@ -199,7 +207,7 @@ public final class Admin {
      *
      * @param userInputList the user input list
      */
-    public static void setUsers(final List<UserInput> userInputList) {
+    public void setUsers(final List<UserInput> userInputList) {
         users = new ArrayList<>();
         for (UserInput userInput : userInputList) {
             users.add(new User(userInput.getUsername(), userInput.getAge(), userInput.getCity()));
@@ -211,7 +219,7 @@ public final class Admin {
      *
      * @param songInputList the song input list
      */
-    public static void setSongs(final List<SongInput> songInputList) {
+    public void setSongs(final List<SongInput> songInputList) {
         songs = new ArrayList<>();
         for (SongInput songInput : songInputList) {
             songs.add(new Song(songInput.getName(), songInput.getDuration(), songInput.getAlbum(),
@@ -226,7 +234,7 @@ public final class Admin {
      *
      * @param podcastInputList the podcast input list
      */
-    public static void setPodcasts(final List<PodcastInput> podcastInputList) {
+    public void setPodcasts(final List<PodcastInput> podcastInputList) {
         podcasts = new ArrayList<>();
         for (PodcastInput podcastInput : podcastInputList) {
             function(podcastInput);
@@ -238,7 +246,7 @@ public final class Admin {
      *
      * @return the songs
      */
-    public static List<Song> getSongs() {
+    public List<Song> getSongs() {
         return new ArrayList<>(songs);
     }
 
@@ -247,7 +255,7 @@ public final class Admin {
      *
      * @return the podcasts
      */
-    public static List<Podcast> getPodcasts() {
+    public List<Podcast> getPodcasts() {
         return new ArrayList<>(podcasts);
     }
 
@@ -256,7 +264,7 @@ public final class Admin {
      *
      * @return the playlists
      */
-    public static List<Playlist> getPlaylists() {
+    public List<Playlist> getPlaylists() {
         List<Playlist> playlists = new ArrayList<>();
         for (User user : users) {
             playlists.addAll(user.getPlaylists());
@@ -270,7 +278,7 @@ public final class Admin {
      * @param username the username
      * @return the user
      */
-    public static User getUser(final String username) {
+    public User getUser(final String username) {
         for (User user : users) {
             if (user.getUsername().equals(username)) {
                 return user;
@@ -284,7 +292,7 @@ public final class Admin {
      *
      * @param newTimestamp the new timestamp
      */
-    public static void updateTimestamp(final int newTimestamp) {
+    public void updateTimestamp(final int newTimestamp) {
         int elapsed = newTimestamp - timestamp;
         timestamp = newTimestamp;
         if (elapsed == 0) {
@@ -301,7 +309,7 @@ public final class Admin {
      *
      * @return the top 5 songs
      */
-    public static List<String> getTop5Songs() {
+    public List<String> getTop5Songs() {
         List<Song> sortedSongs = new ArrayList<>(songs);
         for (Song song : songs) {
             int likes = 0;
@@ -332,7 +340,7 @@ public final class Admin {
      *
      * @return the top 5 songs
      */
-    public static List<String> getTop5Artists() {
+    public List<String> getTop5Artists() {
         List<Artist> sortedArtists = new ArrayList<>(Artist.getArtists());
         for (Artist artist : Artist.getArtists()) {
             int likes = 0;
@@ -363,7 +371,7 @@ public final class Admin {
      *
      * @return the top 5 playlists
      */
-    public static List<String> getTop5Playlists() {
+    public List<String> getTop5Playlists() {
         List<Playlist> sortedPlaylists = new ArrayList<>(getPlaylists());
         sortedPlaylists.sort(Comparator.comparingInt(Playlist::getFollowers)
                 .reversed()
@@ -383,7 +391,7 @@ public final class Admin {
     /**
      * Reset.
      */
-    public static void reset() {
+    public void reset() {
         users = new ArrayList<>();
         songs = new ArrayList<>();
         podcasts = new ArrayList<>();

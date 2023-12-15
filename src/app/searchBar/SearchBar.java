@@ -55,10 +55,11 @@ public final class SearchBar {
      */
     public List<LibraryEntry> search(final Filters filters, final String type) {
         List<LibraryEntry> entries;
+        Admin admin = Admin.getInstance();
 
         switch (type) {
             case "song":
-                entries = new ArrayList<>(Admin.getSongs());
+                entries = new ArrayList<>(admin.getSongs());
 
                 if (filters.getName() != null) {
                     entries = filterByName(entries, filters.getName());
@@ -90,7 +91,7 @@ public final class SearchBar {
 
                 break;
             case "playlist":
-                entries = new ArrayList<>(Admin.getPlaylists());
+                entries = new ArrayList<>(admin.getPlaylists());
 
                 entries = filterByPlaylistVisibility(entries, user);
 
@@ -108,7 +109,7 @@ public final class SearchBar {
 
                 break;
             case "podcast":
-                entries = new ArrayList<>(Admin.getPodcasts());
+                entries = new ArrayList<>(admin.getPodcasts());
 
                 if (filters.getName() != null) {
                     entries = filterByName(entries, filters.getName());
@@ -155,11 +156,11 @@ public final class SearchBar {
      */
     public List<User> search(final Filters filters, final String type, final SearchBar searchBar) {
         List<User> entries;
-
+        Admin admin = Admin.getInstance();
         switch (type) {
             case "artist":
                 entries = new ArrayList<>();
-                for (User user : Admin.getUsers()) {
+                for (User user : admin.getUsers()) {
                     if (user.getType() != null && user.getType().equals("artist")) {
                         entries.add(user);
                     }
@@ -171,7 +172,7 @@ public final class SearchBar {
                 break;
             case "host":
                 entries = new ArrayList<>();
-                for (User user : Admin.getUsers()) {
+                for (User user : admin.getUsers()) {
                     if (user.getType() != null && user.getType().equals("host")) {
                         entries.add(user);
                     }
